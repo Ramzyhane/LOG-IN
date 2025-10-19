@@ -1,0 +1,26 @@
+{
+  "name": "log-in",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ramzyhane/LOG-IN.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ramzyhane/LOG-IN/issues"
+  },
+  "homepage": "https://github.com/Ramzyhane/LOG-IN#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.19.1",
+    "nodemon": "^3.1.10",
+    "path": "^0.12.7"
+  }
+}
