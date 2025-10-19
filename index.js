@@ -1,63 +1,53 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const path = require('path')
-const { use } = require('react')
 const port = 3019
 
-
 const app = express()
-app.use(express.static(__dirname))
-app.use(express.urlencoded({extended:true}))
-mongoose.connect("mongodb://localhost:27017/stusers")
-const db = mongoose.connect
-db.once('open',()=>{
-  console.log('mongoose connect')
+// Don't let express.static automatically serve index.html for '/'
+// so our app.get('/') can return `sign.html` as intended.
+app.use(express.static(__dirname, { index: false }))
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+
+mongoose.connect("mongodb://localhost:27017/stusers", { useNewUrlParser: true, useUnifiedTopology: true })
+const db = mongoose.connection
+db.on('error', (err) => {
+  console.error('mongoose connection error:', err)
 })
+db.once('open', () => {
+  console.log('mongoose connected')
+})
+
 const userSchema = new mongoose.Schema({
-  email:String,
-  name:String,
-  password:String
+  email: String,
+  name: String,
+  password: String
 })
 
-const Users = mongoose.model("data",userSchema)
+// Use a conventional model name — Mongoose will create the collection 'users'
+const Users = mongoose.model("User", userSchema)
 
-
-app.get("/",(req,res)=>{
-  res.sendFile(path.join(__dirname,("sign.html")))
-
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "sign.html"))
 })
 
-app.post("/post",async (req,res)=>{
-  const {email,name,password} = req.body;
-  const user = new Users({
-    email,
-    name,
-    password
-  })
-  await user.save()
-  console.log(user)
-  res.send("From send ")
+app.post("/post", async (req, res) => {
+  try {
+    //console.log('POST /post body:', req.body)
+    const { email, name, password } = req.body
+    const user = new Users({ email, name, password })
+    const saved = await user.save()
+    //console.log('saved user:', saved)
+    res.send("Form sent")
+  } catch (err) {
+    console.error('Error saving user:', err)
+    res.status(500).send('Error saving user')
+  }
+  
 })
 
-
-
-app.listen(port,()=>{
-  console.log("Server start")
+app.listen(port, () => {
+  console.log("Server started on port", port)
+  
 })
-
-
-
-/*function goToForgotPage() {
-  // זה יוביל אותך לעמוד חדש (לדוגמה forgot.html)
-  window.location.href = "sign.html";
-}
-function goToForgotSign(){
-  window.location.href = "index.html";
-}
-
-const pwd = document.getElementById('password');
-const chk = document.getElementById('showPassword');
-
- chk.addEventListener('change', () => {
- pwd.type = chk.checked ? 'text' : 'password';
- });*/
