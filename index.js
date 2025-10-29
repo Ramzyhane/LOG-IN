@@ -28,7 +28,8 @@ const userSchema = new mongoose.Schema({
 // Use a conventional model name — Mongoose will create the collection 'users'
 const Users = mongoose.model("User", userSchema)
 
-app.get("/", (req, res) => {
+app.get("/home.html", (req, res) => {
+  console.log('GET / requested from', req.ip)
   res.sendFile(path.join(__dirname, "sign.html"))
 })
 
@@ -46,6 +47,25 @@ app.post("/post", async (req, res) => {
   }
   
 })
+
+app.post('/login', async (req, res) => {
+  try {
+    console.log('Login request received:', req.body); // <--- בדיקה חשובה
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email, password });
+    if (user) {
+      res.json({ success: true, message: 'Login successful ✅' });
+    } else {
+      res.json({ success: false, message: 'Email or password is incorrect ❌' });
+    }
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 
 app.listen(port, () => {
   console.log("Server started on port", port)
