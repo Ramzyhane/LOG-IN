@@ -36,36 +36,30 @@ app.get("/home.html", (req, res) => {
 
 app.post("/post", async (req, res) => {
   try {
-    //console.log('POST /post body:', req.body)
     const { email, name, password } = req.body
     const user = new Users({ email, name, password })
-    const saved = await user.save()
-    //console.log('saved user:', saved)
-    res.send("Form sent")
+    await user.save()
+    res.json({ success: true, message: "User registered successfully ✅" })
   } catch (err) {
     console.error('Error saving user:', err)
-    res.status(500).send('Error saving user')
+    res.status(500).json({ success: false, message: 'Error saving user' })
   }
-  
 })
 
 app.post('/login', async (req, res) => {
   try {
-    console.log('Login request received:', req.body); // <--- בדיקה חשובה
-
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email, password });
+    const { email, password } = req.body
+    const user = await Users.findOne({ email, password })
     if (user) {
-      res.json({ success: true, message: 'Login successful ✅' });
+      res.json({ success: true, message: 'Login successful ✅' })
     } else {
-      res.json({ success: false, message: 'Email or password is incorrect ❌' });
+      res.json({ success: false, message: 'Email or password incorrect ❌' })
     }
   } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Server error:', err)
+    res.status(500).json({ success: false, message: 'Server error' })
   }
-});
+})
 
 
 app.listen(port, () => {

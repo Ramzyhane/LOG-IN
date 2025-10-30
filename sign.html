@@ -1,83 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="index.css">
-    <script src="index.js" defer></script>
-    <script src="index.js" defer></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <section>
+  <section>
     <div class="login-box">
-    <form id="loginForm" action="/post" method="post">
-            <h2>Sigin</h2>
-            <div class="input-box">
-                <span class="icon"><ion-icon name="mail-sharp"></ion-icon></span>
-                <input  type="email" id="email" name="email" required>
-                <label >Email</label>
-            </div>
-                 <div class="input-box">
-                <span class="icon"><ion-icon name="person-add-outline"></ion-icon></span>
-                <input type="text" id="name" name="name" required>
-                <label >Name</label>
-            </div>
-            <div class="input-box">
-                <span class="icon"><ion-icon name="lock-closed-sharp"></ion-icon></span>
-                <input id="password" name="password" type="password" required>
-                <label >Password</label>
-            </div>
-            <div class="remember-forgot">
-                <label ><input id="showPassword" type="checkbox">remember</label>
-              
-            </div>
-            <button type="submit">Login</button>
-            <div class="register-link">
-                <p>Don't have an accounr ? <a href="#" onclick="goToForgotSign()">Register</a></p>
-            </div>
-        </form>
+      <form id="registerForm">
+        <h2>Register</h2>
+
+        <div class="input-box">
+          <span class="icon"><ion-icon name="mail-sharp"></ion-icon></span>
+          <input type="email" id="email" name="email" required>
+          <label>Email</label>
+        </div>
+
+        <div class="input-box">
+          <span class="icon"><ion-icon name="person-add-outline"></ion-icon></span>
+          <input type="text" id="name" name="name" required>
+          <label>Name</label>
+        </div>
+
+        <div class="input-box">
+          <span class="icon"><ion-icon name="lock-closed-sharp"></ion-icon></span>
+          <input id="password" name="password" type="password" required>
+          <label>Password</label>
+        </div>
+
+        <button type="submit">Register</button>
+
+        <div class="register-link">
+          <p>Already have an account? 
+            <a href="login.html">Login</a>
+          </p>
+        </div>
+
+        <p id="message" style="text-align:center; margin-top:10px;"></p>
+      </form>
     </div>
-    </section>
-    <script>
-         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault()
+  </section>
 
-      const email = document.getElementById('email').value.trim()
-      const name = document.getElementById('name').value.trim()
-      const password = document.getElementById('password').value.trim()
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-      // שולח לנתיב /login בשרת (לא /index)
-        const res = await fetch('/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, password })
-        })
+      const email = document.getElementById('email').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const message = document.getElementById('message');
 
-      const data = await res.json()
-      const message = document.getElementById('message')
+      try {
+        const res = await fetch('/post', {   // 👈 שולח לנתיב ששומר במונגו
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name, password })
+        });
 
-      if (data.success) {
-        message.style.color = 'green'
-        message.textContent = data.message
-        // מעבר לעמוד הבא לאחר התחברות מוצלחת
-        setTimeout(() => {
-         window.location.href = 'index.html'
-        }, 1000)
-      } else {
-        message.style.color = 'red'
-        message.textContent = data.message
+        const data = await res.json();
+
+        if (data.success) {
+          message.style.color = 'green';
+          message.textContent = 'User registered successfully ✅';
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1200);
+        } else {
+          message.style.color = 'red';
+          message.textContent = data.message || 'Registration failed ❌';
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        message.style.color = 'red';
+        message.textContent = 'Server error — check connection.';
       }
-    })
-    function goToForgotSign() {
-        window.location.href = 'index.html';
-    }
-    </script>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
+    });
+  </script>
 
-    </script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    
+  <!-- Ionicons -->
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>
