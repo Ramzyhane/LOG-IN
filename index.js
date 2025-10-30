@@ -7,6 +7,7 @@ const app = express()
 // Don't let express.static automatically serve index.html for '/'
 // so our app.get('/') can return `sign.html` as intended.
 app.use(express.static(__dirname, { index: false }))
+
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
