@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חידון חיות 🐾</title>
+  <style>
+    body {
+      font-family: "Comic Sans MS", sans-serif;
+      background-color: #f9f7f3;
+      text-align: center;
+      padding: 40px;
+      direction: rtl;
+    }
+
+    h1 {
+      color: #ff7b00;
+      font-size: 32px;
+    }
+
+    .quiz-box {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      padding: 30px;
+      max-width: 400px;
+      margin: 40px auto;
+    }
+
+    .question {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      background: #ffd966;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ffcc33;
+    }
+
+    .result {
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="welcome">ברוך הבא לעולם השאלות 🌍</h1>
+
+  <div class="quiz-box">
+    <div class="question" id="question">טוען שאלה...</div>
+    <div id="answers"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("username") || "שחקן";
+    document.getElementById("welcome").innerText = `👋 ברוך הבא, ${username}!`;
+
+    let current = 0;
+    let score = 0;
+    let questions = [];
+
+    // שליפת שאלות מהשרת
+    async function loadQuestions() {
+      try {
+        const res = await fetch("http://localhost:3019/questions");
+        questions = await res.json();
+        showQuestion();
+      } catch (err) {
+        document.getElementById("question").innerText = "⚠️ לא ניתן לטעון שאלות מהשרת.";
+        console.error(err);
+      }
+    }
+
+    function showQuestion() {
+      const qBox = document.getElementById("question");
+      const aBox = document.getElementById("answers");
+      const result = document.getElementById("result");
+
+      if (current >= questions.length) {
+        qBox.innerHTML = `🎉 כל הכבוד ${username}! סיימת את החידון.`;
+        aBox.innerHTML = "";
+        result.innerHTML = `🏆 ניקוד סופי: ${score}/${questions.length}`;
+        return;
+      }
+
+      const q = questions[current];
+      qBox.textContent = q.question;
+      aBox.innerHTML = "";
+      result.innerHTML = "";
+
+      q.answers.forEach((ans, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = ans;
+        btn.onclick = () => checkAnswer(i);
+        aBox.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(index) {
+      const q = questions[current];
+      const result = document.getElementById("result");
+
+      if (index === q.correct) {
+        score++;
+        result.innerHTML = "✅ תשובה נכונה!";
+      } else {
+        result.innerHTML = `❌ טעות! התשובה הנכונה: ${q.answers[q.correct]}`;
+      }
+
+      current++;
+      setTimeout(showQuestion, 1200);
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>

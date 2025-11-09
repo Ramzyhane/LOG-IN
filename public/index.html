@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="index.css">
-  <script src="sign.html" defer></script>
 </head>
 <body>
   <section>
@@ -47,38 +46,43 @@
 
   <!-- קוד JS -->
   <script>
+    // התחברות
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault()
+      e.preventDefault();
 
-      const email = document.getElementById('email').value.trim()
-      const password = document.getElementById('password').value.trim()
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const message = document.getElementById('message');
 
-      // שולח לנתיב /login בשרת (לא /index)
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
 
-      const data = await res.json()
-      const message = document.getElementById('message')
+        const data = await res.json();
 
-      if (data.success) {
-        message.style.color = 'green'
-        message.textContent = data.message
-        // מעבר לעמוד הבא לאחר התחברות מוצלחת
-        setTimeout(() => {
-          window.location.href = '/home.html'
-        }, 1000)
-      } else {
-        message.style.color = 'red'
-        message.textContent = data.message
+        if (data.success) {
+          message.style.color = 'green';
+          message.textContent = data.message;
+          setTimeout(() => {
+            window.location.href = '/home.html';
+          }, 1000);
+        } else {
+          message.style.color = 'red';
+          message.textContent = data.message;
+        }
+      } catch (err) {
+        message.style.color = 'red';
+        message.textContent = 'Server error, try again later.';
+        console.error(err);
       }
-    })
+    });
 
     // מעבר למסך רישום
     function goToRegisterPage() {
-      window.location.href = 'sign.html'
+      window.location.href = 'sign.html';
     }
   </script>
 </body>

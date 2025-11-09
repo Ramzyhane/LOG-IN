@@ -18,8 +18,9 @@
   },
   "homepage": "https://github.com/Ramzyhane/LOG-IN#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "mongoose": "^8.19.1",
+    "mongoose": "^8.19.3",
     "nodemon": "^3.1.10",
     "path": "^0.12.7"
   }
