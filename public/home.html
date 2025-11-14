@@ -66,8 +66,10 @@
   </div>
 
   <script>
-    const username = localStorage.getItem("username") || "שחקן";
+    
+    const username = localStorage.getItem("name") || "שחקן";
     document.getElementById("welcome").innerText = `👋 ברוך הבא, ${username}!`;
+
 
     let current = 0;
     let score = 0;
