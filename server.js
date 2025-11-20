@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const bcrypt  = require('bcrypt');
 
 const app = express();
 const port = 3019;
@@ -54,13 +55,15 @@ app.get("/", (req, res) => {
 app.post('/post', async (req, res) => {
   const { email, name, password } = req.body;
 
+  const hashedPassword  = await bcrypt.hash(password, 10);
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.json({ success: false, message: 'Email already exists' });
     }
 
-    const newUser = new User({ email, name, password });
+    const newUser = new User({ email, name, password: hashedPassword });
     await newUser.save();
 
     // 👈 מחזירים את השם
@@ -71,23 +74,31 @@ app.post('/post', async (req, res) => {
 });
 
 
-
-// LOGIN
 app.post('/login', async (req, res) => {
-    console.log("LOGIN BODY:", req.body);
-
+  try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+    if (!user) {
+      return res.json({ success: false, message: 'Invalid email or password' });
+    }
 
-    if (!user)
-        return res.json({ success: false, message: 'Invalid email or password' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: 'Wrong password' });
+    }
 
-    if (user.password !== password)
-        return res.json({ success: false, message: 'Invalid email or password' });
+    res.json({
+      success: true,
+      message: 'Login successful',
+      name: user.name
+    });
 
-    res.json({ success: true, message: 'Login successful', name: user.name });
+  } catch (err) {
+    res.json({ success: false, message: 'Server error' });
+  }
 });
+
 
 
 // ADD QUIZ QUESTIONS
