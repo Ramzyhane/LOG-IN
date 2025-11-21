@@ -4,8 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>חידון חיות 🐾</title>
+  <link rel="stylesheet" href="index.css">
     <link rel="icon"  href="bg.jpg">
   <style>
+        .rotate {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
     body {
       font-family: "Comic Sans MS", sans-serif;
       background-color: #f9f7f3;
@@ -45,6 +54,10 @@
       cursor: pointer;
       transition: 0.3s;
     }
+    img{
+
+      background-color: rgb(6, 231, 28);
+    }
 
     button:hover {
       background: #ffcc33;
@@ -60,75 +73,164 @@
 <body>
   <h1 id="welcome">ברוך הבא לעולם השאלות 🌍</h1>
 
+  <div id="infoRow" style="font-size:22px; margin:10px 0;">
+    <span id="questionNumber">שאלה 1</span> | <img id="clockIcon" width="2%"
+     src="https://img.icons8.com/?size=512&id=WCbYEPdsMFtZ&format=png" />
+ <span id="timer">30 </span> שניות
+  </div>
+
+
   <div class="quiz-box">
     <div class="question" id="question">טוען שאלה...</div>
     <div id="answers"></div>
     <div class="result" id="result"></div>
   </div>
+<script>
 
-  <script>
-    
-    const username = localStorage.getItem("name") || "שחקן";
-    document.getElementById("welcome").innerText = `👋 ברוך הבא, ${username}!`;
+const username = localStorage.getItem("name") || "שחקן";
+document.getElementById("welcome").innerText = `👋 ברוך הבא, ${username}! `;
+
+let current = 0;
+let score = 0;
+let questions = [];
+
+// שליפת שאלות מהשרת
+async function loadQuestions() {
+  try {
+    const res = await fetch("http://localhost:3019/questions");
+    questions = await res.json();
+    showQuestion();
+  } catch (err) {
+    document.getElementById("question").innerText = "⚠️ לא ניתן לטעון שאלות מהשרת.";
+    console.error(err);
+  }
+}
+
+// הצגת שאלה
+function showQuestion() {
+  const qBox = document.getElementById("question");
+  const aBox = document.getElementById("answers");
+  const result = document.getElementById("result");
+
+  // סיום החידון
+  if (current >= questions.length) {
+    qBox.innerHTML = `🎉 כל הכבוד ${username}! סיימת את החידון.`;
+    aBox.innerHTML = "";
+    result.innerHTML = `🏆 ניקוד סופי: ${score}/${questions.length}`;
+    return;
+  }
+
+  // מספר השאלה
+  document.getElementById("questionNumber").textContent =
+    `שאלה ${current + 1} מתוך ${questions.length}`;
+
+  // הצגת שאלה
+  const q = questions[current];
+  qBox.textContent = q.question;
+  aBox.innerHTML = "";
+  result.innerHTML = "";
+
+  // יצירת כפתורים
+  q.answers.forEach((ans, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = ans;
+    btn.onclick = () => checkAnswer(i);
+    aBox.appendChild(btn);
+  });
+
+  // התחלת טיימר בכל שאלה חדשה
+  startTimer();
+}
+
+// פונקציית מעבר לשאלה הבאה
+function nextQuestion() {
+  current++;
+  showQuestion();
+}
+
+/* -----------------------------------
+   ⏱ טיימר + סיבוב אייקון השעון
+------------------------------------ */
+
+let time = 30;
+let countdown;
+let timerRunning = false;
+
+function startTimer() {
+  stopTimer(); // ביטול טיימר קודם
+  time = 30;
+
+  document.getElementById("timer").textContent = time;
+
+  const clockIcon = document.getElementById("clockIcon");
+  clockIcon.classList.add("rotate"); // התחלת סיבוב
+
+  timerRunning = true;
+
+ countdown = setInterval(() => {
+  time--;
+  const timerSpan = document.getElementById("timer");
+  timerSpan.textContent = time;
 
 
-    let current = 0;
-    let score = 0;
-    let questions = [];
+  if (time < 10) {
+    timerSpan.style.color = "red";
+  } else if (time < 20) {
+    timerSpan.style.color = "Lime"; 
+  }
+  else {
+    timerSpan.style.color = "black"; // צבע רגיל
+  }
 
-    // שליפת שאלות מהשרת
-    async function loadQuestions() {
-      try {
-        const res = await fetch("http://localhost:3019/questions");
-        questions = await res.json();
-        showQuestion();
-      } catch (err) {
-        document.getElementById("question").innerText = "⚠️ לא ניתן לטעון שאלות מהשרת.";
-        console.error(err);
-      }
-    }
+  if (time === 0) {
+    stopTimer();
+    checkAnswerTimeout();
+  }
+}, 1000);
+}
 
-    function showQuestion() {
-      const qBox = document.getElementById("question");
-      const aBox = document.getElementById("answers");
-      const result = document.getElementById("result");
+function stopTimer() {
+  clearInterval(countdown);
+  timerRunning = false;
 
-      if (current >= questions.length) {
-        qBox.innerHTML = `🎉 כל הכבוד ${username}! סיימת את החידון.`;
-        aBox.innerHTML = "";
-        result.innerHTML = `🏆 ניקוד סופי: ${score}/${questions.length}`;
-        return;
-      }
+  const clockIcon = document.getElementById("clockIcon");
+  clockIcon.classList.remove("rotate"); // עצירת סיבוב
+}
 
-      const q = questions[current];
-      qBox.textContent = q.question;
-      aBox.innerHTML = "";
-      result.innerHTML = "";
+// 🟦 שחקן לא ענה בזמן
+function checkAnswerTimeout() {
+  const result = document.getElementById("result");
+  const q = questions[current];
 
-      q.answers.forEach((ans, i) => {
-        const btn = document.createElement("button");
-        btn.textContent = ans;
-        btn.onclick = () => checkAnswer(i);
-        aBox.appendChild(btn);
-      });
-    }
+  result.innerHTML = `⏰ נגמר הזמן! התשובה הנכונה: ${q.answers[q.correct]}`;
 
-    function checkAnswer(index) {
-      const q = questions[current];
-      const result = document.getElementById("result");
+  setTimeout(() => {
+    nextQuestion();
+  }, 1500);
+}
 
-      if (index === q.correct) {
-        score++;
-        result.innerHTML = "✅ תשובה נכונה!";
-      } else {
-        result.innerHTML = `❌ טעות! התשובה הנכונה: ${q.answers[q.correct]}`;
-      }
+// 🟩 שחקן ענה — מפסיק טיימר מיד
+function checkAnswer(index) {
+  const q = questions[current];
+  const result = document.getElementById("result");
 
-      current++;
-      setTimeout(showQuestion, 1200);
-    }
+  if (timerRunning) stopTimer();
 
-    loadQuestions();
-  </script>
-</body>
+  if (index === q.correct) {
+    score++;
+    result.innerHTML = "✅ תשובה נכונה!";
+  } else {
+    result.innerHTML = `❌ טעות! התשובה הנכונה: ${q.answers[q.correct]}`;
+  }
+
+  setTimeout(() => {
+    nextQuestion();
+  }, 1500);
+}
+
+loadQuestions();
+
+</script>
+
+ </body>
 </html>
