@@ -5,7 +5,7 @@ const path = require('path');
 const bcrypt  = require('bcrypt');
 
 const app = express();
-const port = 3019;
+const port = process.env.PORT || 3019; 
 
 app.use(cors());
 app.use(express.json());
