@@ -24,7 +24,9 @@ mongoose.connect("mongodb://localhost:27017/stusers", {
 const userSchema = new mongoose.Schema({
     email: String,
     name: String,
-    password: String
+    password: String,
+    failedAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null }
 });
 
 const User = mongoose.model("User", userSchema);
@@ -83,10 +85,39 @@ app.post('/login', async (req, res) => {
       return res.json({ success: false, message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.json({ success: false, message: 'Wrong password' });
+    // ----- בדיקה אם החשבון נעול -----
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const remaining = Math.ceil((user.lockUntil - Date.now()) / 1000/60);
+      return res.json({
+        success: false,
+        message: `החשבון נעול, נסה שוב בעוד ${remaining} דקות`
+      });
     }
+
+    // ----- בדיקת סיסמה -----
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      // העלאת מספר ניסיונות כושלים
+      user.failedAttempts += 1;
+
+      // אם הגיע ל־3 טעויות → נעילה ל־5 דקות
+      if (user.failedAttempts >= 3) {
+        user.lockUntil = new Date(Date.now() + 5 * 60 * 1000); // 5 דקות
+      }
+
+      await user.save();
+
+      return res.json({
+        success: false,
+        message: 'Wrong password'
+      });
+    }
+
+    // ----- הצלחה: איפוס ניסיונות -----
+    user.failedAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
 
     res.json({
       success: true,
@@ -95,9 +126,11 @@ app.post('/login', async (req, res) => {
     });
 
   } catch (err) {
+    console.error(err);
     res.json({ success: false, message: 'Server error' });
   }
 });
+
 
 
 
