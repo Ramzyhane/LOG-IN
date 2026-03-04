@@ -3,19 +3,18 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const bcrypt  = require('bcrypt');
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3019; 
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 // ----------- CONNECT TO MONGODB -----------
-mongoose.connect("mongodb://localhost:27017/stusers", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB connected"))
 .catch(err => console.log("DB ERROR:", err));
 
