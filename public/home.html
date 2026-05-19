@@ -116,11 +116,24 @@ function showQuestion() {
   const aBox = document.getElementById("answers");
   const result = document.getElementById("result");
 
-  // סיום החידון
+    // סיום החידון
   if (current >= questions.length) {
     qBox.innerHTML = `🎉 כל הכבוד ${username}! סיימת את החידון.`;
     aBox.innerHTML = "";
-    result.innerHTML = `🏆 ניקוד סופי: ${score}/${questions.length}`;
+
+    let message = "";
+
+    if (score < 20) {
+      message = `😢 נכשלת (${score}/${questions.length})`;
+    } else {
+      message = `🎉 עברת בהצלחה (${score}/${questions.length})`;
+    }
+
+    result.innerHTML = `
+      🏆 ניקוד סופי: ${score}/${questions.length} <br><br>
+      ${message}
+    `;
+
     return;
   }
 
